@@ -175,7 +175,8 @@ function generateInterventions(
         action: 'Review item',
         synthesisReasoning: {
           interpretation: `High priority item directly identified by cross-source analysis. Requires attention.`,
-        }
+        },
+        metadata: signal.metadata,
       });
     }
   }

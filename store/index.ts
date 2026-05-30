@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { Linking } from 'react-native';
 import type { OperationalState, Intervention, TimeBlock, OperationalSignal } from '../engine/types';
 import type { GoogleUser } from '../services/auth';
 import { CoralProxy, initCoral } from '../coral/proxy';
@@ -208,6 +209,11 @@ export const useOperationalStore = create<OperationalStore>((set, get) => ({
       set({ asyncDraft: draft, showAsyncDraft: true });
     } else {
       // For protect-focus, escalate, or defer
+      if (intervention.metadata?.html_url) {
+        Linking.openURL(intervention.metadata.html_url).catch((err) =>
+          console.error('Failed to open URL:', err)
+        );
+      }
       set({ selectedIntervention: intervention });
       get().resolveIntervention();
     }
@@ -251,8 +257,9 @@ export const useOperationalStore = create<OperationalStore>((set, get) => ({
       set({
         operationalState: opState,
         interventions: filteredInterventions,
+        phase: 'ready', // Restore phase to ready so the next intervention (or empty state) can render
       });
-    }, 300);
+    }, 1500); // Give it a little delay so the user sees the 'resolved' animation/state before popping the next one
   },
 
   toggleReasoning: () => set((s) => ({ showReasoning: !s.showReasoning })),

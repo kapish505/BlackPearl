@@ -77,6 +77,7 @@ export interface Intervention {
     github?: string;
     interpretation: string;
   };
+  metadata?: Record<string, any>;
 }
 
 // --- Operational State ---
