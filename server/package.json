@@ -1,0 +1,17 @@
+{
+  "name": "black-pearl-coral-server",
+  "version": "1.0.0",
+  "description": "Coral SQL backend for Black Pearl operational intelligence",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "node --watch index.js"
+  },
+  "dependencies": {
+    "@google/genai": "^2.6.0",
+    "cors": "^2.8.5",
+    "dotenv": "^17.4.2",
+    "express": "^5.1.0"
+  }
+}
