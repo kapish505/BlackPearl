@@ -234,15 +234,26 @@ app.get('/api/operational', async (_req, res) => {
     schemaContext += '(Error fetching schema)';
   }
 
-  // 1.5. Dynamically determine the GitHub owner, but hardcode repo to PocketGrav for the demo scenario
+  // 1.5. Dynamically determine the GitHub owner and repo if github is connected
   let githubOwner = 'kapish505'; // fallback
-  let githubRepo = 'PocketGrav'; // Demo scenario target
+  let githubRepo = 'PocketGrav'; // fallback
   if (connectedSources.includes('github')) {
     try {
       const loginRes = await coralSQL('SELECT login FROM github.user LIMIT 1');
       if (loginRes.length > 0) githubOwner = loginRes[0].login;
+
+      // Dynamically find the repo with the most operational pressure (most open issues/PRs), fallback to most recently pushed
+      const repoRes = await coralSQL("SELECT name FROM github.user_repos ORDER BY open_issues DESC, pushed_at DESC LIMIT 1");
+      if (repoRes.length > 0) githubRepo = repoRes[0].name;
     } catch (err) {
       console.warn('Could not dynamically fetch github context:', err);
+      // Fallback to pushed_at if open_issues column isn't found
+      try {
+        const fallbackRes = await coralSQL("SELECT name FROM github.user_repos ORDER BY pushed_at DESC LIMIT 1");
+        if (fallbackRes.length > 0) githubRepo = fallbackRes[0].name;
+      } catch (e) {
+         console.warn('Fallback dynamic repo fetch failed:', e);
+      }
     }
   }
 
