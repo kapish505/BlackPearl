@@ -234,17 +234,13 @@ app.get('/api/operational', async (_req, res) => {
     schemaContext += '(Error fetching schema)';
   }
 
-  // 1.5. Dynamically determine the GitHub owner and repo if github is connected
+  // 1.5. Dynamically determine the GitHub owner, but hardcode repo to PocketGrav for the demo scenario
   let githubOwner = 'kapish505'; // fallback
-  let githubRepo = 'PocketGrav'; // fallback
+  let githubRepo = 'PocketGrav'; // Demo scenario target
   if (connectedSources.includes('github')) {
     try {
       const loginRes = await coralSQL('SELECT login FROM github.user LIMIT 1');
       if (loginRes.length > 0) githubOwner = loginRes[0].login;
-
-      // Find the repo with the most recent push (most active)
-      const repoRes = await coralSQL("SELECT name FROM github.user_repos ORDER BY pushed_at DESC LIMIT 1");
-      if (repoRes.length > 0) githubRepo = repoRes[0].name;
     } catch (err) {
       console.warn('Could not dynamically fetch github context:', err);
     }
@@ -298,7 +294,7 @@ CRITICAL RULES:
   const results = {};
   const queryLog = [];
 
-  for (const [name, sql] of Object.entries(queries)) {
+  const queryPromises = Object.entries(queries).map(async ([name, sql]) => {
     const startMs = Date.now();
     try {
       const data = await coralSQL(sql);
@@ -310,9 +306,11 @@ CRITICAL RULES:
       const elapsedMs = Date.now() - startMs;
       results[name] = { data: [], rowCount: 0, error: err.message };
       queryLog.push({ name, sql, elapsedMs, status: 'error', error: err.message });
-      console.log(`  ✗ ${name}: ${err.message} (${elapsedMs}ms)`);
+      console.error(`  ✗ ${name} failed:`, err.message);
     }
-  }
+  });
+
+  await Promise.all(queryPromises);
 
   res.json({ status: 'ok', timestamp: new Date().toISOString(), connectedSources, results, queryLog });
 });
