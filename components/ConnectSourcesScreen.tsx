@@ -10,7 +10,7 @@ import Constants from 'expo-constants';
 
 const hostUri = Constants.expoConfig?.hostUri;
 const serverIp = hostUri ? hostUri.split(':')[0] : (Platform.OS === 'android' ? '10.0.2.2' : 'localhost');
-const CORAL_SERVER = `https://blackpearl-x8m6.onrender.com`;
+const CORAL_SERVER = `https://blackpearl-dhjr.onrender.com`;
 
 interface SourceConfig {
   id: string;
@@ -199,7 +199,7 @@ export function ConnectSourcesScreen() {
 
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 5000);
+      const timeoutId = setTimeout(() => controller.abort(), 30000);
 
       const response = await fetch(`${CORAL_SERVER}/api/sources/connect`, {
         method: 'POST',
@@ -220,7 +220,7 @@ export function ConnectSourcesScreen() {
     } catch (err: any) {
       Alert.alert(
         'Server Error',
-        'Could not reach the Coral backend at localhost:3001.\n\nMake sure the server is running:\ncd server && node index.js'
+        `Could not reach the Coral backend at ${CORAL_SERVER}.\n\n${err.message || 'Network request failed'}`
       );
     } finally {
       setIsSubmitting(false);

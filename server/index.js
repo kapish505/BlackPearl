@@ -236,34 +236,43 @@ app.get('/api/operational', async (_req, res) => {
 
   // 1.5. Dynamically determine the GitHub owner and repo if github is connected
   let githubOwner = 'kapish505'; // fallback
-  let githubRepo = 'black-pearl'; // fallback
+  let githubRepo = 'PocketGrav'; // fallback
   if (connectedSources.includes('github')) {
     try {
       const loginRes = await coralSQL('SELECT login FROM github.user LIMIT 1');
       if (loginRes.length > 0) githubOwner = loginRes[0].login;
 
-      // Try to find a repo they own
-      const repoRes = await coralSQL('SELECT name FROM github.user_repos LIMIT 1');
+      // Find the repo with the most recent push (most active)
+      const repoRes = await coralSQL("SELECT name FROM github.user_repos ORDER BY pushed_at DESC LIMIT 1");
       if (repoRes.length > 0) githubRepo = repoRes[0].name;
     } catch (err) {
       console.warn('Could not dynamically fetch github context:', err);
     }
   }
 
-  // 2. Ask Gemini to generate 3-4 useful cross-source JOINs
+  // 2. Ask Gemini to generate 3-4 useful cross-source queries
   console.log('[operational] Synthesizing dynamic queries with Gemini...');
   const prompt = `You are an expert SQL engineer for Coral (a cross-source query engine).
 The user wants to detect "operational pressure" across their connected apps.
 Here is the available schema:
 ${schemaContext}
 
-Generate 3 to 4 SQL queries that JOIN data across these sources to find operational insights (e.g., meetings related to PRs, slack messages discussing Jira tickets, etc.).
-Also include a couple of single-source queries to establish baseline context (e.g., today's meetings, recent open PRs).
+Generate 5 SQL queries that find operational insights across these sources.
+Include a mix of single-source and cross-source JOIN queries, for example:
+- Today's calendar events
+- Open GitHub PRs with review comments
+- Recent Slack channel activity  
+- Gmail threads
+- Cross-source: meetings that might relate to open PRs
 
 CRITICAL RULES:
-1. ONLY use tables and columns listed above.
-2. For ANY queries involving 'github' tables (like github.pulls, github.commits, github.alerts), you MUST include a WHERE clause filtering by \`owner='${githubOwner}'\` and \`repo='${githubRepo}'\`. Without this, GitHub queries will crash.
-3. Return the output STRICTLY as a JSON object where keys are the query names (e.g., 'calendar', 'github_slack_synthesis') and values are the SQL strings. No markdown formatting.`;
+1. ONLY use tables and columns listed above. Double-check every column name exists.
+2. For ANY queries involving 'github' tables (like github.pulls, github.issues, github.commits), you MUST include WHERE owner='${githubOwner}' AND repo='${githubRepo}'.
+3. Coral SQL does NOT support these functions: DATE(), DATETIME(), NOW(), CURRENT_DATE, CURRENT_TIMESTAMP, STRFTIME(), date arithmetic, or any date/time functions. Do NOT use them. Instead, just query without date filters and use LIMIT to control result size.
+4. Coral SQL does NOT support ILIKE. Use LIKE instead.
+5. Coral SQL does NOT support subqueries. Use simple queries only.
+6. Always add LIMIT 15 to prevent oversized results.
+7. Return STRICTLY a JSON object where keys are query names and values are SQL strings. No markdown.`;
 
   let queries = {};
   try {
@@ -279,9 +288,10 @@ CRITICAL RULES:
   } catch (err) {
     console.error('[operational] LLM Synthesis failed, falling back to static queries:', err);
     // Fallback static queries
-    if (connectedSources.includes('google_calendar')) queries.calendar = `SELECT summary, start_date, end_date FROM google_calendar.events LIMIT 15`;
-    if (connectedSources.includes('github')) queries.github_prs = `SELECT title, state, html_url FROM github.pulls WHERE state = 'open' LIMIT 15`;
-    if (connectedSources.includes('slack')) queries.slack_messages = `SELECT text, channel FROM slack.messages LIMIT 40`;
+    if (connectedSources.includes('google_calendar')) queries.calendar = `SELECT summary, start_date_time, end_date_time FROM google_calendar.events ORDER BY start_date_time DESC LIMIT 15`;
+    if (connectedSources.includes('github')) queries.github_prs = `SELECT title, state, html_url, created_at FROM github.pulls WHERE owner = '${githubOwner}' AND repo = '${githubRepo}' AND state = 'open' LIMIT 15`;
+    if (connectedSources.includes('slack')) queries.slack_channels = `SELECT name, topic, purpose, num_members FROM slack.channels LIMIT 15`;
+    if (connectedSources.includes('gmail')) queries.gmail = `SELECT snippet, history_id FROM gmail.messages LIMIT 15`;
   }
 
   const results = {};
