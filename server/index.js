@@ -274,7 +274,7 @@ Include a mix of single-source and cross-source JOIN queries, for example:
 CRITICAL RULES:
 1. ONLY use tables and columns listed above. Double-check every column name exists.
 2. For ANY queries involving 'github' tables (like github.pulls, github.issues, github.commits), you MUST include WHERE owner='${githubOwner}' AND repo='${githubRepo}'.
-3. Coral SQL does NOT support date functions like DATE() or NOW(). Instead, to filter for recent/upcoming events, use string comparison against today's date: >= '${todayISO}'. For example: WHERE start_date_time >= '${todayISO}'.
+3. Coral SQL does NOT support date functions like DATE() or NOW(). Do not try to filter by recent dates, just return the most relevant rows using ORDER BY and LIMIT.
 4. Coral SQL does NOT support ILIKE. Use LIKE instead.
 5. Coral SQL does NOT support subqueries. Use simple queries only.
 6. Always add LIMIT 15 to prevent oversized results.

@@ -159,6 +159,27 @@ function generateInterventions(
     }
   }
 
+  // --- High-priority individual signal surfacing ---
+  const urgentSignals = signals.filter((s) => s.severity >= 0.8 && s.type === 'cross-source');
+  for (const signal of urgentSignals) {
+    // Only add if it's not already in an escalation cluster
+    const inEscalation = escalationResult.escalations.some(e => e.signalIds.includes(signal.id));
+    if (!inEscalation) {
+      interventions.push({
+        id: nextId(),
+        type: 'escalate',
+        title: `High Priority: ${signal.source.charAt(0).toUpperCase() + signal.source.slice(1)}`,
+        description: signal.content,
+        confidence: { level: 'high', explanation: 'Direct high-severity operational signal.' },
+        leverage: clamp(signal.severity, 0.4, 1),
+        action: 'Review item',
+        synthesisReasoning: {
+          interpretation: `High priority item directly identified by cross-source analysis. Requires attention.`,
+        }
+      });
+    }
+  }
+
   // --- Cognitive overload interventions ---
   if (cognitiveResult.overloadRisk > 0.6) {
     const meetings = timeline.filter((b) => b.type === 'meeting');
