@@ -160,7 +160,7 @@ function generateInterventions(
   }
 
   // --- High-priority individual signal surfacing ---
-  const urgentSignals = signals.filter((s) => s.severity >= 0.8 && s.type === 'cross-source');
+  const urgentSignals = signals.filter((s) => s.severity >= 0.8);
   for (const signal of urgentSignals) {
     // Only add if it's not already in an escalation cluster
     const inEscalation = escalationResult.escalations.some(e => e.signalIds.includes(signal.id));

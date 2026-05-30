@@ -122,13 +122,15 @@ export class CoralProxy {
 
         // Dynamically assess severity based on natural language urgency indicators
         const textLower = content.toLowerCase();
-        let calculatedSeverity = isSynthesis ? 0.8 : 0.5;
+        // Base severity is 0.85 because the AI explicitly generated this query to find operational pressure. 
+        // We consider all returned rows as operational insights.
+        let calculatedSeverity = isSynthesis ? 0.9 : 0.85;
         let isUrgent = false;
         
         const urgentKeywords = ['urgent', 'critical', 'sev-1', 'sev1', 'sev-2', 'sev2', 'outage', 'blocking', 'breaking change', 'vulnerability', 'bug'];
         for (const kw of urgentKeywords) {
           if (textLower.includes(kw)) {
-            calculatedSeverity = Math.max(calculatedSeverity, 0.9);
+            calculatedSeverity = Math.max(calculatedSeverity, 0.95);
             isUrgent = true;
           }
         }
