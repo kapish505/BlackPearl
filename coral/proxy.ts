@@ -86,9 +86,11 @@ export class CoralProxy {
 
       for (const row of data) {
         // If it looks like a calendar event, push to timeline
-        if (row.start_time || row.summary || row.meeting) {
-          const startTime = row.start_time ? new Date(row.start_time) : new Date();
-          const endTime = row.end_time ? new Date(row.end_time) : new Date(startTime.getTime() + 30 * 60000);
+        if (row.start_time || row.start_date_time || row.summary || row.meeting) {
+          const startTimeRaw = row.start_time || row.start_date_time;
+          const endTimeRaw = row.end_time || row.end_date_time;
+          const startTime = startTimeRaw ? new Date(startTimeRaw) : new Date();
+          const endTime = endTimeRaw ? new Date(endTimeRaw) : new Date(startTime.getTime() + 30 * 60000);
           timeline.push({
             id: `coral-dyn-cal-${Math.random()}`,
             start: startTime,

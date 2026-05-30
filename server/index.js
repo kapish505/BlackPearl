@@ -252,6 +252,7 @@ app.get('/api/operational', async (_req, res) => {
 
   // 2. Ask Gemini to generate 3-4 useful cross-source queries
   console.log('[operational] Synthesizing dynamic queries with Gemini...');
+  const todayISO = new Date().toISOString().split('T')[0] + 'T00:00:00Z';
   const prompt = `You are an expert SQL engineer for Coral (a cross-source query engine).
 The user wants to detect "operational pressure" across their connected apps.
 Here is the available schema:
@@ -268,7 +269,7 @@ Include a mix of single-source and cross-source JOIN queries, for example:
 CRITICAL RULES:
 1. ONLY use tables and columns listed above. Double-check every column name exists.
 2. For ANY queries involving 'github' tables (like github.pulls, github.issues, github.commits), you MUST include WHERE owner='${githubOwner}' AND repo='${githubRepo}'.
-3. Coral SQL does NOT support these functions: DATE(), DATETIME(), NOW(), CURRENT_DATE, CURRENT_TIMESTAMP, STRFTIME(), date arithmetic, or any date/time functions. Do NOT use them. Instead, just query without date filters and use LIMIT to control result size.
+3. Coral SQL does NOT support date functions like DATE() or NOW(). Instead, to filter for recent/upcoming events, use string comparison against today's date: >= '${todayISO}'. For example: WHERE start_date_time >= '${todayISO}'.
 4. Coral SQL does NOT support ILIKE. Use LIKE instead.
 5. Coral SQL does NOT support subqueries. Use simple queries only.
 6. Always add LIMIT 15 to prevent oversized results.
