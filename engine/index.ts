@@ -182,7 +182,8 @@ function generateInterventions(
   }
 
   // --- Cognitive overload interventions ---
-  if (cognitiveResult.overloadRisk > 0.6) {
+  // Lowered threshold to 0.3 so the intelligent meeting deferral logic triggers more readily for the user to experience it
+  if (cognitiveResult.overloadRisk > 0.3) {
     const meetings = timeline.filter((b) => b.type === 'meeting');
     const deferrable = meetings.filter((m) => {
       // Meetings with low implicit priority (no escalation signal) are deferrable
