@@ -49,7 +49,8 @@ const PROVIDERS = {
 };
 
 const getRedirectUri = (req, providerId) => {
-  return `http://localhost:3001/api/auth/callback/${providerId}`;
+  const baseUrl = process.env.RENDER_EXTERNAL_URL || 'http://localhost:3001';
+  return `${baseUrl}/api/auth/callback/${providerId}`;
 };
 
 // 1. Redirect to Provider Auth Screen
