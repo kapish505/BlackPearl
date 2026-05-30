@@ -120,11 +120,24 @@ export class CoralProxy {
         else if (row.created_at) timestamp = new Date(row.created_at);
         else if (row.updated_at) timestamp = new Date(row.updated_at);
 
+        // Dynamically assess severity based on natural language urgency indicators
+        const textLower = content.toLowerCase();
+        let calculatedSeverity = isSynthesis ? 0.8 : 0.5;
+        let isUrgent = false;
+        
+        const urgentKeywords = ['urgent', 'critical', 'sev-1', 'sev1', 'sev-2', 'sev2', 'outage', 'blocking', 'breaking change', 'vulnerability', 'bug'];
+        for (const kw of urgentKeywords) {
+          if (textLower.includes(kw)) {
+            calculatedSeverity = Math.max(calculatedSeverity, 0.9);
+            isUrgent = true;
+          }
+        }
+
         signals.push({
           id: `coral-dyn-${Math.random()}`,
           source,
-          type: 'cross-source', // Force cross-source for demo visibility
-          severity: 0.9, // Force high severity to trigger interventions
+          type: (isSynthesis || isUrgent) ? 'cross-source' : 'operational',
+          severity: calculatedSeverity,
           timestamp,
           content,
           metadata: row,
