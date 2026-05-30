@@ -104,8 +104,8 @@ export class CoralProxy {
         }
 
         // Determine source based on query name or columns
-        const isSynthesis = queryName.includes('synthesis') || queryName.includes('cross') || queryName.includes('join') || Object.keys(row).length > 4;
-        const source = isSynthesis ? 'coral-synthesis' : (queryName.includes('slack') ? 'slack' : (queryName.includes('github') ? 'github' : 'custom'));
+        const isSynthesis = queryName.toLowerCase().includes('synthesis') || queryName.toLowerCase().includes('cross') || queryName.toLowerCase().includes('join') || Object.keys(row).length > 4;
+        const source = isSynthesis ? 'coral-synthesis' : (queryName.toLowerCase().includes('slack') ? 'slack' : (queryName.toLowerCase().includes('github') ? 'github' : 'custom'));
         
         let content = '';
         if (isSynthesis) {

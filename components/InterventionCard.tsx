@@ -85,6 +85,16 @@ function InterventionItem({ intervention }: { intervention: Intervention }) {
           {intervention.title}
         </Text>
 
+        {/* Description */}
+        {intervention.description && (
+          <Text
+            className="font-hanken-grotesk text-secondary mb-3"
+            style={{ fontSize: 15, lineHeight: 22 }}
+          >
+            {intervention.description}
+          </Text>
+        )}
+
         {/* Coral Magic Toggle */}
         <Pressable
           onPress={toggleReasoning}
