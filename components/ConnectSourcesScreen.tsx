@@ -10,7 +10,7 @@ import Constants from 'expo-constants';
 
 const hostUri = Constants.expoConfig?.hostUri;
 const serverIp = hostUri ? hostUri.split(':')[0] : (Platform.OS === 'android' ? '10.0.2.2' : 'localhost');
-const CORAL_SERVER = `http://${serverIp}:3001`;
+const CORAL_SERVER = `https://blackpearl-x8m6.onrender.com`;
 
 interface SourceConfig {
   id: string;
@@ -172,9 +172,9 @@ export function ConnectSourcesScreen() {
     try {
       const returnUrl = Linking.createURL('');
       const authUrl = `${CORAL_SERVER}/api/auth/login/${source.id}?returnTo=${encodeURIComponent(returnUrl)}`;
-      
+
       const result = await WebBrowser.openAuthSessionAsync(authUrl, returnUrl);
-      
+
       if (result.type === 'success' && result.url) {
         const { queryParams } = Linking.parse(result.url);
         if (queryParams?.token) {

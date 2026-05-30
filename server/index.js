@@ -49,9 +49,10 @@ function getCoralEnv() {
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
+const coralBin = process.env.RENDER ? './bin/coral' : 'coral';
+
 async function coralSQL(query) {
   try {
-    const coralBin = process.env.RENDER ? './bin/coral' : 'coral';
     const { stdout } = await exec(coralBin, ['sql', '--format', 'json', query], {
       timeout: 30_000,
       env: getCoralEnv(),
@@ -113,12 +114,13 @@ app.post('/api/sources/connect', async (req, res) => {
 
     // Custom sources need to use the --file flag pointing to the manifest
     if (['gmail', 'discord', 'linkedin'].includes(source)) {
-      args.push('--file', `/Users/kapish/Work/The Black Pearl/coral-sources/${source}/manifest.yaml`);
+      const manifestPath = new URL(`./coral-sources/${source}/manifest.yaml`, import.meta.url).pathname;
+      args.push('--file', manifestPath);
     } else {
       args.push(source);
     }
 
-    const { stdout, stderr } = await exec('coral', args, {
+    const { stdout, stderr } = await exec(coralBin, args, {
       timeout: 30_000,
       env,
     });
@@ -178,7 +180,7 @@ app.get('/api/sources/status', async (_req, res) => {
 
 app.get('/api/health', async (_req, res) => {
   try {
-    const { stdout } = await exec('coral', ['--version']);
+    const { stdout } = await exec(coralBin, ['--version']);
     const sources = await getConnectedSources();
     res.json({ status: 'ok', version: stdout.trim(), sources });
   } catch {

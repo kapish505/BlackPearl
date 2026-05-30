@@ -1,0 +1,28 @@
+dsl_version: 3
+version: "1.0"
+name: discord
+description: Discord API
+backend: http
+base_url: https://discord.com/api/v10/
+
+tables:
+  - name: guilds
+    description: Discord servers the user is in
+    request:
+      method: GET
+      path: /users/@me/guilds
+    columns:
+      - name: id
+        type: Utf8
+      - name: name
+        type: Utf8
+  - name: channels
+    description: Discord channels
+    request:
+      method: GET
+      path: /users/@me/channels
+    columns:
+      - name: id
+        type: Utf8
+      - name: name
+        type: Utf8

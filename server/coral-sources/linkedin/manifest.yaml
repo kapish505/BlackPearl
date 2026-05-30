@@ -1,0 +1,18 @@
+dsl_version: 3
+version: "1.0"
+name: linkedin
+description: LinkedIn API
+backend: http
+base_url: https://api.linkedin.com/v2/
+
+tables:
+  - name: profile
+    description: LinkedIn user profile
+    request:
+      method: GET
+      path: /userinfo
+    columns:
+      - name: sub
+        type: Utf8
+      - name: name
+        type: Utf8

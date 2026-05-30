@@ -14,7 +14,7 @@ import Constants from 'expo-constants';
 
 const hostUri = Constants.expoConfig?.hostUri;
 const serverIp = hostUri ? hostUri.split(':')[0] : (Platform.OS === 'android' ? '10.0.2.2' : 'localhost');
-const CORAL_SERVER_URL = `http://${serverIp}:3001`;
+const CORAL_SERVER_URL = `https://blackpearl-x8m6.onrender.com`;
 
 /** The actual Coral SQL queries that ran — shown in "Coral magic" UI */
 export interface CoralQueryLogEntry {

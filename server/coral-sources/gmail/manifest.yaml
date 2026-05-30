@@ -1,0 +1,28 @@
+dsl_version: 3
+version: "1.0"
+name: gmail
+description: Google Mail API
+backend: http
+base_url: https://gmail.googleapis.com/gmail/v1/
+
+tables:
+  - name: messages
+    description: Gmail messages
+    request:
+      method: GET
+      path: /users/me/messages
+    columns:
+      - name: id
+        type: Utf8
+      - name: threadId
+        type: Utf8
+  - name: threads
+    description: Gmail threads
+    request:
+      method: GET
+      path: /users/me/threads
+    columns:
+      - name: id
+        type: Utf8
+      - name: snippet
+        type: Utf8
