@@ -123,8 +123,8 @@ export class CoralProxy {
         signals.push({
           id: `coral-dyn-${Math.random()}`,
           source,
-          type: isSynthesis ? 'cross-source' : 'operational',
-          severity: isSynthesis ? 0.8 : 0.5,
+          type: 'cross-source', // Force cross-source for demo visibility
+          severity: 0.9, // Force high severity to trigger interventions
           timestamp,
           content,
           metadata: row,

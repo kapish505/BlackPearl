@@ -257,7 +257,7 @@ app.get('/api/operational', async (_req, res) => {
     }
   }
 
-  // 2. Ask Gemini to generate 3-4 useful cross-source queries
+  // 2. Ask Gemini to generate 3 useful cross-source queries
   console.log('[operational] Synthesizing dynamic queries with Gemini...');
   const todayISO = new Date().toISOString().split('T')[0] + 'T00:00:00Z';
   const prompt = `You are an expert SQL engineer for Coral (a cross-source query engine).
@@ -265,12 +265,10 @@ The user wants to detect "operational pressure" across their connected apps.
 Here is the available schema:
 ${schemaContext}
 
-Generate 5 SQL queries that find operational insights across these sources.
+Generate 3 SQL queries that find operational insights across these sources.
 Include a mix of single-source and cross-source JOIN queries, for example:
 - Today's calendar events
 - Open GitHub PRs with review comments
-- Recent Slack channel activity  
-- Gmail threads
 - Cross-source: meetings that might relate to open PRs
 
 CRITICAL RULES:
@@ -305,7 +303,10 @@ CRITICAL RULES:
   const results = {};
   const queryLog = [];
 
-  const queryPromises = Object.entries(queries).map(async ([name, sql]) => {
+  // Execute sequentially to prevent CPU thrashing on Render free tier (0.1 CPU)
+  for (const ObjectEntry of Object.entries(queries)) {
+    const name = ObjectEntry[0];
+    const sql = ObjectEntry[1];
     const startMs = Date.now();
     try {
       const data = await coralSQL(sql);
@@ -319,9 +320,7 @@ CRITICAL RULES:
       queryLog.push({ name, sql, elapsedMs, status: 'error', error: err.message });
       console.error(`  ✗ ${name} failed:`, err.message);
     }
-  });
-
-  await Promise.all(queryPromises);
+  }
 
   res.json({ status: 'ok', timestamp: new Date().toISOString(), connectedSources, results, queryLog });
 });
